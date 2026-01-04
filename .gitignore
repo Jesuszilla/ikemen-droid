@@ -8,6 +8,7 @@
 .fseventsd
 .gradle
 .idea
+local.properties
 
 ### Shared libraries ###
 *.so
