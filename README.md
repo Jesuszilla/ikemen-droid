@@ -19,5 +19,6 @@ Special thanks:
 * Lasombra Demon - Spanish translations
 * MotorRoach - Portuguese translations
 * Vans - Chinese & Japanese translation feedback
+* dionednd - Filipino & Meranaw translations
 
 The original license is included in LICENSE.txt

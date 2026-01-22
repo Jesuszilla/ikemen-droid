@@ -1,0 +1,10 @@
+<resources>
+    <string name="game_folder_str">Piliin ang Folder ng Laro</string>
+    <string name="first_run_dialog_title">Unang Takbo</string>
+    <string name="first_run_dialog_msg">Kinukuha ang mga asset ng laro... Pakiusap na maghintay.</string>
+    <string name="extraction_error_title">Error sa Extraction</string>
+    <string name="exit_str">Umalis</string>
+    <string name="updating_files_title">Pag-update ng mga File</string>
+    <string name="updating_files_msg">Pakiusap na maghintay habang sini-synchronize ang mga file ng engine…</string>
+    <string name="update_error_title">Error sa Pag-update</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="game_folder_str">Piliangka so Folder a Gitagita</string>
+    <string name="first_run_dialog_title">Ikaona a Ragay</string>
+    <string name="first_run_dialog_msg">P'kuwaan daan so asset a Gitagita... Nayaw ka sa di mathey.</string>
+    <string name="extraction_error_title">Ribat sa Kapliyo o Files</string>
+    <string name="exit_str">Awa</string>
+    <string name="updating_files_title">Kap'salimbago o manga Files</string>
+    <string name="updating_files_msg">Nayaw ka sa di mathey ka phakap'rnganun daan so manga file a engine…</string>
+    <string name="update_error_title">Ribat sa Kap'salimbago</string>
+</resources>
