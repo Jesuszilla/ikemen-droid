@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="JoystickOverlay">
+        <attr name="axisX" format="integer" />
+        <attr name="axisY" format="integer" />
+    </declare-styleable>
+</resources>

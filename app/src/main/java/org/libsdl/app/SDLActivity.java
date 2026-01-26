@@ -37,10 +37,12 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.BaseInputConnection;
@@ -331,8 +333,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private SharedPreferences mSharedPrefs;
     private static String mBasePath;
     private Button mSDButton;
+    private ControllerOverlay mControllerOverlay;
     private final Runnable hideRunnable = () -> {
-        if (mSDButton != null) mSDButton.setVisibility(View.INVISIBLE);
+        if (mLayout != null) mLayout.setVisibility(View.INVISIBLE);
     };
     private Handler mUIHandler = new Handler(android.os.Looper.getMainLooper());
 
@@ -446,6 +449,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 //        mLayout.addView(mSurface);
 
         mLayout = new RelativeLayout(this);
+        mLayout.setClickable(false);
+        mLayout.setFocusable(false);
         rootLayout.addView(mLayout, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         ));
@@ -486,6 +491,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         mSDButton.setZ(100f); // Force it to the top of the Z-axis
 
+        mControllerOverlay = new ControllerOverlay(this);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        mLayout.addView(mControllerOverlay, lp);
+
 //        setContentView(mLayout); // WHAT IT WAS
         setContentView(rootLayout);
 
@@ -518,18 +527,24 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     @Override
-    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
-        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-            if (mSDButton != null) {
-                // Force it to be visible and at the front
-                mSDButton.setVisibility(View.VISIBLE);
-                mSDButton.bringToFront();
-                mSDButton.getParent().requestLayout(); // Force the container to refresh
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        int action = ev.getAction();
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
+            if (mLayout != null) {
+                ViewGroup root = (ViewGroup) mLayout.getParent();
+                // Get the index of the last child
+                int lastChildIndex = root.getChildCount() - 1;
 
-                // Reset the timer
-                mUIHandler.removeCallbacks(hideRunnable);
-                mUIHandler.postDelayed(hideRunnable, 5000);
+                // CRITICAL: Only call bringToFront if the UI is hidden OR not actually on top.
+                // If it is ALREADY on top, calling bringToFront() kills the current touch!
+                if (mLayout.getVisibility() != View.VISIBLE || root.getChildAt(lastChildIndex) != mLayout) {
+                    mLayout.setVisibility(View.VISIBLE);
+                    mLayout.bringToFront();
+                    root.requestLayout();
+                }
             }
+            mUIHandler.removeCallbacks(hideRunnable);
+            mUIHandler.postDelayed(hideRunnable, 5000);
         }
         return super.dispatchTouchEvent(ev);
     }

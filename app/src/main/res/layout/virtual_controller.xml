@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:splitMotionEvents="true">
+
+    <RelativeLayout
+        android:id="@+id/dpad_container"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="50dp"
+        android:layout_marginBottom="55dp"
+        android:splitMotionEvents="true"
+        android:background="@drawable/round_button"
+        android:backgroundTint="#88FFFFFF">
+
+        <Button android:id="@+id/dp_up" android:text="↑"
+            android:layout_width="50dp" android:layout_height="50dp"
+            android:layout_centerHorizontal="true" android:layout_alignParentTop="true"
+            android:alpha="0.5"
+            android:background="#00000000"/>
+<!--        <Button android:id="@+id/dp_upleft" android:text="↖"-->
+<!--            android:layout_width="50dp" android:layout_height="50dp"-->
+<!--            android:layout_centerHorizontal="true" android:layout_alignParentTop="true"-->
+<!--            android:layout_alignParentLeft="true"-->
+<!--            android:alpha="0.5" />-->
+        <Button android:id="@+id/dp_left" android:text="←"
+            android:layout_width="50dp" android:layout_height="50dp"
+            android:layout_centerVertical="true" android:layout_alignParentLeft="true"
+            android:alpha="0.5"
+            android:background="#00000000"/>
+<!--        <Button android:id="@+id/dp_downleft" android:text="↙"-->
+<!--            android:layout_width="50dp" android:layout_height="50dp"-->
+<!--            android:layout_centerVertical="true" android:layout_alignParentLeft="true"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:alpha="0.5"/>-->
+        <Button android:id="@+id/dp_down" android:text="↓"
+            android:layout_width="50dp" android:layout_height="50dp"
+            android:layout_centerHorizontal="true" android:layout_alignParentBottom="true"
+            android:alpha="0.5"
+            android:background="#00000000"/>
+<!--        <Button android:id="@+id/dp_downright" android:text="↘"-->
+<!--            android:layout_width="50dp" android:layout_height="50dp"-->
+<!--            android:layout_centerHorizontal="true" android:layout_alignParentBottom="true"-->
+<!--            android:layout_alignParentRight="true"-->
+<!--            android:alpha="0.5"/>-->
+        <Button android:id="@+id/dp_right" android:text="→"
+            android:layout_width="50dp" android:layout_height="50dp"
+            android:layout_centerVertical="true" android:layout_alignParentRight="true"
+            android:alpha="0.5"
+            android:background="#00000000"/>
+<!--        <Button android:id="@+id/dp_upright" android:text="↗"-->
+<!--            android:layout_width="50dp" android:layout_height="50dp"-->
+<!--            android:layout_centerVertical="true" android:layout_alignParentRight="true"-->
+<!--            android:layout_alignParentTop="true"-->
+<!--            android:alpha="0.5"/>-->
+    </RelativeLayout>
+
+    <org.libsdl.app.JoystickOverlay
+        android:id="@+id/left_analog"
+        android:layout_width="125dp"
+        android:layout_height="125dp"
+        android:layout_toRightOf="@id/dpad_container"
+        android:layout_alignTop="@id/dpad_container"
+        android:layout_marginLeft="34dp"
+        app:axisX="0" app:axisY="1" />
+
+    <RelativeLayout
+        android:id="@+id/button_grid"
+        android:layout_width="320dp"
+        android:layout_height="220dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="55dp"
+        android:splitMotionEvents="true">
+
+        <Button android:id="@+id/btn_w" android:text="W"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_z" android:text="Z"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_toLeftOf="@id/btn_w"
+            android:layout_marginRight="2dp"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_y" android:text="Y"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_toLeftOf="@id/btn_z"
+            android:layout_marginTop="25dp"
+            android:layout_marginRight="2dp"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_x" android:text="X"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_toLeftOf="@id/btn_y"
+            android:layout_marginTop="45dp"
+            android:layout_marginRight="2dp"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_d" android:text="D"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/btn_w"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_c" android:text="C"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_toLeftOf="@id/btn_d"
+            android:layout_alignTop="@id/btn_d"
+            android:layout_marginRight="2dp"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_b" android:text="B"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_toLeftOf="@id/btn_c"
+            android:layout_alignTop="@id/btn_c"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="2dp"
+            android:background="@drawable/round_button" />
+
+        <Button android:id="@+id/btn_a" android:text="A"
+            android:layout_width="55dp" android:layout_height="55dp"
+            android:layout_toLeftOf="@id/btn_b"
+            android:layout_alignTop="@id/btn_b"
+            android:layout_marginTop="28dp"
+            android:layout_marginRight="2dp"
+            android:background="@drawable/round_button" />
+    </RelativeLayout>
+
+    <org.libsdl.app.JoystickOverlay
+        android:id="@+id/right_analog"
+        android:layout_width="125dp"
+        android:layout_height="125dp"
+        android:layout_below="@id/button_grid"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="34dp"
+        android:layout_marginTop="-120dp"
+        app:axisX="2" app:axisY="3" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:splitMotionEvents="true">
+        <Button android:clickable="true" android:focusable="true" android:id="@+id/btn_back" android:text="Menu" android:layout_width="55dp" android:layout_height="55dp" android:background="@drawable/round_button" android:layout_margin="5dp" />
+        <Button android:clickable="true" android:focusable="true" android:id="@+id/btn_start" android:text="Start" android:layout_width="55dp" android:layout_height="55dp" android:background="@drawable/round_button" android:layout_margin="5dp" />
+    </LinearLayout>
+
+</RelativeLayout>
