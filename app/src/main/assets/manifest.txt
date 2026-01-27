@@ -159,6 +159,7 @@ font/name14.def
 data/fight.snd
 data/common.snd
 data/common1.cns.zss
+data/demo.zss
 data/system.base.def
 data/fightfx.air
 data/score.zss
