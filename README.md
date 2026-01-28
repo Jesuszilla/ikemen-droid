@@ -13,7 +13,11 @@
 7. (Optional) Install to your Android device by running the command `adb install -r app/build/outputs/apk/app-debug.apk`.
 
 ### LICENSE NOTICE
-I.K.E.M.E.N-Go specific logic (C) 2026 Jesuszilla. SDLActivity was modified and AssetExtractor, ControllerOverlay, and JoystickOverlay and related XML files were added to accomplish this purpose.
+I.K.E.M.E.N-Go specific logic copyrights:
+(C) 2026 Jesuszilla
+(C) 2026 Sohil876
+
+SDLActivity was modified and AssetExtractor, ControllerOverlay, and JoystickOverlay and related XML files were added to accomplish this purpose.
 
 Special thanks:
 * Lasombra Demon - Spanish translations

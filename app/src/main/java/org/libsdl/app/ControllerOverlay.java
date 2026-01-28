@@ -24,14 +24,48 @@ public class ControllerOverlay extends RelativeLayout {
         int[] deviceIds = InputDevice.getDeviceIds();
         for (int id : deviceIds) {
             InputDevice dev = InputDevice.getDevice(id);
-            int sources = dev.getSources();
             // Check if the device is a physical joystick or gamepad
-            if (((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) ||
-                    ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)) {
+            // OLD LOGIC: Checked only flags (Let sensors through)
+            // NEW LOGIC: Checks isRealGamepad (Stricter filtering by querying for buttons)
+            if (isRealGamepad(dev)) {
                 count++;
             }
         }
         return count;
+    }
+
+    // Helper to distinguish real controllers from "Ghost" sensors
+    private boolean isRealGamepad(InputDevice device) {
+        if (device == null) return false;
+
+        int sources = device.getSources();
+        boolean isJoystick = ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) ||
+                ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD);
+
+        // Must identify as joystick/gamepad
+        if (!isJoystick) return false;
+
+        // Ignore virtual devices (optional, prevents software loopbacks)
+        if (device.isVirtual()) return false;
+
+        // Ghost filter, does it have actual buttons?
+        // Sensors report as Joysticks but have NO buttons.
+        // Real gamepads always have at least one of these.
+        int[] keysToCheck = {
+                android.view.KeyEvent.KEYCODE_BUTTON_A,
+                android.view.KeyEvent.KEYCODE_BUTTON_B,
+                android.view.KeyEvent.KEYCODE_BUTTON_X,
+                android.view.KeyEvent.KEYCODE_BUTTON_Y,
+                android.view.KeyEvent.KEYCODE_BUTTON_START,
+                android.view.KeyEvent.KEYCODE_BUTTON_SELECT,
+        };
+
+        boolean[] hasKeys = device.hasKeys(keysToCheck);
+        for (boolean exists : hasKeys) {
+            if (exists) return true; // It has any of these buttons, it's a real gamepad
+        }
+
+        return false; // No buttons, its a sensor, ignore it
     }
 
     private void setupButton(View parent, int viewId, final int androidButtonId) {
