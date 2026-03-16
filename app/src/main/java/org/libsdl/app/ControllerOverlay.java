@@ -11,12 +11,14 @@ import android.widget.RelativeLayout;
 import org.ikemen_engine.ikemen_go.R;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ControllerOverlay extends RelativeLayout {
     private int virtualDeviceId;
     private int hatX, hatY = 0;
-    private final Map<Integer, Integer> pointerStates = new HashMap<>(); // PointerID -> Keycode/Axis
+    private final Map<Integer, Set<Integer>> pointerStates = new HashMap<>(); // PointerID -> Keycode/Axis
     private boolean isInitialized = false;
 
     public int getPhysicalJoystickCount() {
@@ -68,46 +70,6 @@ public class ControllerOverlay extends RelativeLayout {
         return false; // No buttons, its a sensor, ignore it
     }
 
-    private void setupButton(View parent, int viewId, final int androidButtonId) {
-        View btn = parent.findViewById(viewId);
-        if (btn == null) return;
-
-        btn.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                SDLControllerManager.onNativePadDown(virtualDeviceId, androidButtonId);
-            } else if (action == MotionEvent.ACTION_UP) {
-                SDLControllerManager.onNativePadUp(virtualDeviceId, androidButtonId);
-            }
-            return true;
-        });
-        btn.setOnHoverListener((v, event) -> {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                SDLControllerManager.onNativePadDown(virtualDeviceId, androidButtonId);
-            } else if (action == MotionEvent.ACTION_UP) {
-                SDLControllerManager.onNativePadUp(virtualDeviceId, androidButtonId);
-            }
-            return true;
-        });
-    }
-
-    private void setupTrigger(View parent, int viewId, final int sdlAxisIndex) {
-        View btn = parent.findViewById(viewId);
-        if (btn == null) return;
-
-        btn.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                SDLControllerManager.onNativeJoy(virtualDeviceId, sdlAxisIndex, 1.0f);
-                btn.setPressed(true);
-            } else if (action == MotionEvent.ACTION_UP) {
-                SDLControllerManager.onNativeJoy(virtualDeviceId, sdlAxisIndex, 0.0f);
-                btn.setPressed(false);
-            }
-            return true;
-        });
-    }
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (!isInitialized) {
@@ -138,7 +100,7 @@ public class ControllerOverlay extends RelativeLayout {
                 rightJoyPointerId = pId;
             } else {
                 // If not a stick, it's a button/dpad
-                updatePointer(pId, getButtonAt(x, y));
+                updatePointer(pId, getButtonsAt(x, y));
             }
         } else if (action == MotionEvent.ACTION_MOVE) {
             for (int i = 0; i < event.getPointerCount(); i++) {
@@ -153,13 +115,12 @@ public class ControllerOverlay extends RelativeLayout {
                 } else if (movePId == rightJoyPointerId) {
                     updateJoystickLogic(findViewById(R.id.right_analog), mx, my);
                 } else {
-                    // Check if we are actually over a NEW button
-                    int currentButton = getButtonAt(mx, my);
-                    Integer lastButton = pointerStates.get(movePId);
+                    Set<Integer> currentButtons = getButtonsAt(mx, my);
+                    Set<Integer> lastButtons = pointerStates.get(movePId);
 
-                    // Only update if the button under THIS finger has actually changed
-                    if (lastButton == null || currentButton != lastButton) {
-                        updatePointer(movePId, currentButton);
+                    // If the sets are different, update the physical state
+                    if (!currentButtons.equals(lastButtons)) {
+                        updatePointer(movePId, currentButtons);
                     }
                 }
             }
@@ -208,19 +169,32 @@ public class ControllerOverlay extends RelativeLayout {
         joy.sendToSDL(0, 0);
     }
 
-    private void updatePointer(int pointerId, int newCode) {
-        Integer oldCode = pointerStates.get(pointerId);
-//        if (oldCode != null && oldCode == newCode) return;
-
-        if (oldCode != null && oldCode != -1) handleInput(oldCode, false);
-        if (newCode != -1) handleInput(newCode, true);
-
-        pointerStates.put(pointerId, newCode);
+    private void updatePointer(int pointerId, Set<Integer> newCodes) {
+        Set<Integer> oldCodes = pointerStates.get(pointerId);
+        if (oldCodes == null) oldCodes = new HashSet<>();
+        // Find buttons that were RELEASED (in old set, not in new)
+        for (Integer oldCode : oldCodes) {
+            if (!newCodes.contains(oldCode)) {
+                handleInput(oldCode, false);
+            }
+        }
+        // Find buttons that were PRESSED (in new set, not in old)
+        for (Integer newCode : newCodes) {
+            if (!oldCodes.contains(newCode)) {
+                handleInput(newCode, true);
+            }
+        }
+        // Save the new state for this finger
+        pointerStates.put(pointerId, newCodes);
     }
 
     private void releasePointer(int pointerId) {
-        Integer lastCode = pointerStates.remove(pointerId);
-        if (lastCode != null && lastCode != -1) handleInput(lastCode, false);
+        Set<Integer> lastCodes = pointerStates.remove(pointerId);
+        if (lastCodes != null) {
+            for (Integer code : lastCodes) {
+                handleInput(code, false);
+            }
+        }
     }
 
     private void handleInput(final int code, boolean pressed) {
@@ -343,33 +317,51 @@ public class ControllerOverlay extends RelativeLayout {
         }
     }
 
-    private int getButtonAt(float x, float y) {
-        // Return -1 for analog sticks
-        if (isViewAtLocation(findViewById(R.id.left_analog), x, y)) return -1;
-        if (isViewAtLocation(findViewById(R.id.right_analog), x, y)) return -1;
+    private int dpToPx(int dp) {
+        float density = getContext().getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
+    }
 
-        // Return -1 for D-Pad so it doesn't enter the pointerStates map logic
-        if (isViewAtLocation(findViewById(R.id.dp_up), x, y)) return -1;
-        if (isViewAtLocation(findViewById(R.id.dp_down), x, y)) return -1;
-        if (isViewAtLocation(findViewById(R.id.dp_left), x, y)) return -1;
-        if (isViewAtLocation(findViewById(R.id.dp_right), x, y)) return -1;
-//        if (isViewAtLocation(findViewById(R.id.dp_upleft), x, y)) return -1;
-//        if (isViewAtLocation(findViewById(R.id.dp_downright), x, y)) return -1;
-//        if (isViewAtLocation(findViewById(R.id.dp_downleft), x, y)) return -1;
-//        if (isViewAtLocation(findViewById(R.id.dp_upright), x, y)) return -1;
+    private Set<Integer> getButtonsAt(float x, float y) {
+        Set<Integer> detectedButtons = new HashSet<>();
 
-        // Physical Buttons
-        if (isViewAtLocation(findViewById(R.id.btn_a), x, y)) return 96;
-        if (isViewAtLocation(findViewById(R.id.btn_b), x, y)) return 97;
-        if (isViewAtLocation(findViewById(R.id.btn_x), x, y)) return 99;
-        if (isViewAtLocation(findViewById(R.id.btn_y), x, y)) return 100;
-        if (isViewAtLocation(findViewById(R.id.btn_d), x, y)) return 102; // LB
-        if (isViewAtLocation(findViewById(R.id.btn_z), x, y)) return 103; // RB
-        if (isViewAtLocation(findViewById(R.id.btn_w), x, y)) return 4004; // LT
-        if (isViewAtLocation(findViewById(R.id.btn_c), x, y)) return 4005; // RT
-        if (isViewAtLocation(findViewById(R.id.btn_start), x, y)) return 108;
-        if (isViewAtLocation(findViewById(R.id.btn_back), x, y)) return 109;
-        return -1;
+        // Define a "padding" factor in pixels. This allows the thumb to trigger
+        // two buttons if it's in the gap between them.
+        int padding = dpToPx(16);
+
+        checkAndAdd(detectedButtons, R.id.btn_a, 96, x, y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_b, 97, x, y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_x, 99, x, y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_y, 100, x, y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_d, 102, x,y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_z, 103, x,y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_w, 4004, x,y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_c, 4005, x,y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_start, 108, x,y, padding);
+        checkAndAdd(detectedButtons, R.id.btn_back, 109, x,y, padding);
+
+        return detectedButtons;
+    }
+
+    private void checkAndAdd(Set<Integer> set, int viewId, int code, float x, float y, int pad) {
+        View v = findViewById(viewId);
+        if (v == null) return;
+
+        int[] loc = new int[2];
+        int[] parentLoc = new int[2];
+        v.getLocationOnScreen(loc);
+        this.getLocationOnScreen(parentLoc);
+
+        // Calculate coordinates with padding
+        int left   = loc[0] - parentLoc[0] - pad;
+        int top    = loc[1] - parentLoc[1] - pad;
+        int right  = left + v.getWidth() + pad*2;
+        int bottom = top + v.getHeight() + pad*2;
+
+        // Add if in region + padding
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+            set.add(code);
+        }
     }
 
     private void updateDpadVisual(int hX, int hY) {
@@ -408,10 +400,6 @@ public class ControllerOverlay extends RelativeLayout {
         LayoutInflater inflater = LayoutInflater.from(context);
         View vc = inflater.inflate(R.layout.virtual_controller, this, true);
         disableAllTouches(vc);
-
-        // Causes issues with updating state
-//        setupDpad(vc);
-//        setupButtons(vc);
     }
 
     private void disableAllTouches(View v) {
@@ -452,29 +440,5 @@ public class ControllerOverlay extends RelativeLayout {
 
     private int ensureJoystickAlive() {
         return SDLControllerManager.nativeAddJoystick(virtualDeviceId, "Xbox 360 Controller", "Gamepad", 0x045E, 0x028E, false, 0xFFF, 6, 0x3F, 1, 0);
-    }
-
-    private void setupDpad(View vc) {
-        vc.findViewById(R.id.dp_up).setClickable(false);
-        vc.findViewById(R.id.dp_down).setClickable(false);
-        vc.findViewById(R.id.dp_left).setClickable(false);
-        vc.findViewById(R.id.dp_right).setClickable(false);
-//        vc.findViewById(R.id.dp_upleft).setClickable(false);
-//        vc.findViewById(R.id.dp_downright).setClickable(false);
-//        vc.findViewById(R.id.dp_downleft).setClickable(false);
-//        vc.findViewById(R.id.dp_upright).setClickable(false);
-    }
-
-    private void setupButtons(View vc) {
-        setupButton(vc, R.id.btn_x, 99);      // X
-        setupButton(vc, R.id.btn_y, 100);     // Y
-        setupButton(vc, R.id.btn_z, 103);     // RB
-        setupTrigger(vc, R.id.btn_w, 4);         // LT
-        setupButton(vc, R.id.btn_a, 96);      // A
-        setupButton(vc, R.id.btn_b, 97);      // B
-        setupTrigger(vc, R.id.btn_c, 5);         // RT
-        setupButton(vc, R.id.btn_d, 102);     // LB
-        setupButton(vc, R.id.btn_back, 109);  // BACK
-        setupButton(vc, R.id.btn_start, 108); // START
     }
 }
