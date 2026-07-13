@@ -17,11 +17,11 @@ stages/stage3d.glb
 stages/stage0-720.def
 stages/interactivestage.def
 stages/interactivestage.sff
-stages/attachedchar/interactivestage.air
-stages/attachedchar/interactivestage.sff
-stages/attachedchar/interactivestage.snd
-stages/attachedchar/interactivestage.zss
-stages/attachedchar/interactivestagechar.def
+stages/interactivestage/interactivestage.air
+stages/interactivestage/interactivestage.sff
+stages/interactivestage/interactivestage.snd
+stages/interactivestage/interactivestage.zss
+stages/interactivestage/interactivestagechar.def
 chars/kfm720/kfm.snd
 chars/kfm720/ending.sff
 chars/kfm720/intro.def
