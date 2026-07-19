@@ -1,4 +1,5 @@
 video/ik_logo.webm
+video/ik_credits.webm
 stages/stage3d_outline.def
 stages/stage0-720.sff
 stages/stage3d.def
@@ -159,6 +160,7 @@ font/name14.def
 data/fight.snd
 data/common.snd
 data/common1.cns.zss
+data/credits.def
 data/demo.zss
 data/system.base.def
 data/fightfx.air
